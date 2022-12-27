@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <style>
+        body {
+            background-color: #333;
+            color: #333;
+            margin: 0;
+            padding-bottom: 2rem;
+            font-family: "Open Sans", sans-serif;
+        }
+
+        #form {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        #input {
+            border: none;
+            padding: 0 1rem;
+            flex: grow 1;
+            border-radius: 2rem;
+            margin: 0.25 rem;
+
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        #mensajes {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+
+        }
+
+        #mensajes>li {
+            padding: 0.5rem 1rem;
+            background-color: #e5be01;
+            color: #efefef;
+
+        }
+
+        #mensajes>li:nth-child(odd) {
+            background: #efefef;
+            color: #333;
+        }
+
+        button {
+            background: #e5be01;
+            color: #efefef;
+        }
+    </style>
+    <title>Socket Chat</title>
+</head>
+
+<body id="body">
+    <ul id="mensajes"></ul>
+    <form action="" id="form" name="form">
+        <input type="text" id="input" name="chat" autocomplete="off"><button>Enviar</button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io()
+        let form = document.getElementById('form')
+        let input = document.getElementById('input')
+        let mensages = document.getElementById('mensajes')
+        let body = document.getElementById('body')
+        body.addEventListener('onload', function (e) {
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission()
+            }
+        })
+        function notificacion(msg) {
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission()
+            } else {
+                const options = {
+                    body: msg,
+                    dir: 'ltr',
+
+                }
+                const notificacion = new Notification('Notification', options)
+                notificacion.onclick = function () {
+                    window.open('http://localhost:4000/')
+                }
+            }
+
+        }
+        form.addEventListener("submit", function (e) {
+            e.preventDefault()
+            socket.emit('chat message', input.value)
+            input.value = ''
+        })
+        socket.on("chat message", function (msg) {
+            let item = document.createElement('li')
+            item.textContent = msg
+            mensages.appendChild(item)
+            window.scrollTo(0, document.body.scrollHeight)
+            notificacion(msg)
+
+        })
+    </script>
+</body>
+
+</html>
